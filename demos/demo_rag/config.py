@@ -71,6 +71,23 @@ class OCIEmbeddingDemoConfig:
 
 
 @dataclass(frozen=True)
+class RuntimeConfig:
+    """Demo runtime behavior configuration.
+
+    Attributes:
+        chunk_size: Maximum chunk size used by RAGRetriever.
+        chunk_overlap: Chunk overlap used by RAGRetriever.
+        clear_before_load: Whether to clear the vector table before loading.
+        log_level: Console logging level.
+    """
+
+    chunk_size: int
+    chunk_overlap: int
+    clear_before_load: bool
+    log_level: str
+
+
+@dataclass(frozen=True)
 class DemoConfig:
     """Runtime configuration for loading PDFs into OracleVectorStore.
 
@@ -78,19 +95,15 @@ class DemoConfig:
         pdf_dir: Folder containing PDF files to load.
         oracle: Oracle vector store configuration.
         embeddings: OCI embedding provider configuration.
-        chunk_size: Maximum chunk size used by RAGRetriever.
-        chunk_overlap: Chunk overlap used by RAGRetriever.
-        clear_before_load: Whether to clear the vector table before loading.
-        log_level: Console logging level.
+        agent_model: Locus model name used by the RAG agent.
+        runtime: Demo runtime behavior configuration.
     """
 
     pdf_dir: Path
     oracle: OracleStoreConfig
     embeddings: OCIEmbeddingDemoConfig
-    chunk_size: int
-    chunk_overlap: int
-    clear_before_load: bool
-    log_level: str
+    agent_model: str
+    runtime: RuntimeConfig
 
 
 def load_config() -> DemoConfig:
@@ -128,10 +141,13 @@ def load_config() -> DemoConfig:
             service_endpoint=_optional_env("DEMO_RAG_OCI_SERVICE_ENDPOINT"),
             config_file=_env("DEMO_RAG_OCI_CONFIG_FILE", "~/.oci/config"),
         ),
-        chunk_size=_int_env("DEMO_RAG_CHUNK_SIZE", 1000),
-        chunk_overlap=_int_env("DEMO_RAG_CHUNK_OVERLAP", 200),
-        clear_before_load=_bool_env("DEMO_RAG_CLEAR_BEFORE_LOAD", False),
-        log_level=_env("DEMO_RAG_LOG_LEVEL", "INFO"),
+        agent_model=_env("DEMO_RAG_AGENT_MODEL", "oci:openai.gpt-5.5"),
+        runtime=RuntimeConfig(
+            chunk_size=_int_env("DEMO_RAG_CHUNK_SIZE", 1000),
+            chunk_overlap=_int_env("DEMO_RAG_CHUNK_OVERLAP", 200),
+            clear_before_load=_bool_env("DEMO_RAG_CLEAR_BEFORE_LOAD", False),
+            log_level=_env("DEMO_RAG_LOG_LEVEL", "INFO"),
+        ),
     )
 
 

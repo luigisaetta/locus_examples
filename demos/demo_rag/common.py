@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 
 from locus.rag.embeddings.oci import OCIEmbeddings
 from locus.rag.retriever import RAGRetriever
@@ -11,6 +12,28 @@ from locus.rag.stores.oracle import OracleVectorStore
 from demos.demo_rag.config import DemoConfig
 
 LOGGER = logging.getLogger(__name__)
+
+
+def configure_warnings() -> None:
+    """Hide known third-party warnings that are not actionable for this demo."""
+    warnings.filterwarnings(
+        "ignore",
+        message="The 'strict' parameter is no longer needed on Python 3\\+.*",
+        category=FutureWarning,
+        module="urllib3.poolmanager",
+    )
+
+
+def configure_logging(level: str) -> None:
+    """Configure console logging for demo scripts.
+
+    Args:
+        level: Logging level name, for example INFO or DEBUG.
+    """
+    logging.basicConfig(
+        level=getattr(logging, level.upper(), logging.INFO),
+        format="%(asctime)s %(levelname)s %(name)s - %(message)s",
+    )
 
 
 def build_embedder(config: DemoConfig) -> OCIEmbeddings:
@@ -76,12 +99,12 @@ def build_retriever(config: DemoConfig) -> RAGRetriever:
     store = build_store(config, dimension=embedder.config.dimension)
     LOGGER.info(
         "Creating RAGRetriever chunk_size=%s chunk_overlap=%s",
-        config.chunk_size,
-        config.chunk_overlap,
+        config.runtime.chunk_size,
+        config.runtime.chunk_overlap,
     )
     return RAGRetriever(
         embedder=embedder,
         store=store,
-        chunk_size=config.chunk_size,
-        chunk_overlap=config.chunk_overlap,
+        chunk_size=config.runtime.chunk_size,
+        chunk_overlap=config.runtime.chunk_overlap,
     )

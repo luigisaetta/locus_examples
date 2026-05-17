@@ -4,38 +4,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import warnings
 from collections.abc import Iterable
 from pathlib import Path
 
 from locus.rag.retriever import RAGRetriever
 
-from demos.demo_rag.common import build_retriever
+from demos.demo_rag.common import configure_logging, configure_warnings, build_retriever
 from demos.demo_rag.config import DemoConfig, load_config
 
 LOGGER = logging.getLogger(__name__)
-
-
-def configure_warnings() -> None:
-    """Hide known third-party warnings that are not actionable for this demo."""
-    warnings.filterwarnings(
-        "ignore",
-        message="The 'strict' parameter is no longer needed on Python 3\\+.*",
-        category=FutureWarning,
-        module="urllib3.poolmanager",
-    )
-
-
-def configure_logging(level: str) -> None:
-    """Configure console logging for the demo script.
-
-    Args:
-        level: Logging level name, for example INFO or DEBUG.
-    """
-    logging.basicConfig(
-        level=getattr(logging, level.upper(), logging.INFO),
-        format="%(asctime)s %(levelname)s %(name)s - %(message)s",
-    )
 
 
 def find_pdf_files(pdf_dir: Path) -> list[Path]:
@@ -105,7 +82,7 @@ async def load_all_pdfs(config: DemoConfig, pdf_files: Iterable[Path]) -> int:
     total_chunks = 0
 
     try:
-        if config.clear_before_load:
+        if config.runtime.clear_before_load:
             LOGGER.info("Clearing vector store before loading new documents")
             removed_count = await retriever.store.clear()
             LOGGER.info("Cleared %s existing document chunk(s)", removed_count)
@@ -124,7 +101,7 @@ async def run() -> None:
     """Run the PDF loading workflow."""
     configure_warnings()
     config = load_config()
-    configure_logging(config.log_level)
+    configure_logging(config.runtime.log_level)
 
     LOGGER.info("Starting OracleVectorStore PDF loader demo")
     LOGGER.info("Using table name: %s", config.oracle.table_name)
