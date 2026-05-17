@@ -1,10 +1,11 @@
-# Demo RAG con Locus e OracleVectorStore
+# RAG Demo with Locus and OracleVectorStore
 
-Questa demo carica i PDF presenti nella cartella `pdf` della root del repository in un vector store Oracle gestito da `locus.rag.OracleVectorStore`.
+This demo loads PDF files from the repository root `pdf` folder into an Oracle
+vector store managed by `locus.rag.OracleVectorStore`.
 
-## Esecuzione
+## Run
 
-Da root del repository:
+From the repository root:
 
 ```bash
 conda install -n locus_examples -c conda-forge oracledb pypdf
@@ -14,7 +15,10 @@ python -m demos.demo_rag.load_pdfs
 
 ## Note
 
-- La tabella Oracle viene creata automaticamente da `OracleVectorStore` alla prima operazione sullo store.
-- Il nome tabella di default della demo è `locus_demo_rag_vectors`.
-- Per estrarre testo dai PDF serve `pypdf` oppure `PyPDF2` installato nell'ambiente conda.
-- Per collegarsi a Oracle serve il pacchetto `oracledb` installato nell'ambiente conda.
+- `OracleVectorStore` creates the Oracle table automatically on the first store
+  operation.
+- The demo default table name is `locus_demo_rag_vectors`.
+- PDF text extraction requires `pypdf` or `PyPDF2` in the conda environment.
+- Oracle connectivity requires `oracledb` in the conda environment.
+- Runtime configuration is read from `demos/demo_rag/.env`; use
+  `demos/demo_rag/.env.example` as the committed template.
