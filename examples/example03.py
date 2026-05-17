@@ -1,3 +1,4 @@
+"""Example03: demonstrate a simple Locus StateGraph with async functions."""
 
 import time
 import asyncio
@@ -11,16 +12,21 @@ def _llm_call(
     prompt: str, *, system: str = "Reply in one short sentence.", max_tokens: int = 2000
 ) -> str:
     """Helper: real model call with timing/token banner — used by every Part."""
-    agent = Agent(model=get_model(max_tokens=max_tokens, temperature=0.), system_prompt=system)
-    
+    agent = Agent(
+        model=get_model(max_tokens=max_tokens, temperature=0.0), system_prompt=system
+    )
+
     t0 = time.perf_counter()
     res = agent.run_sync(prompt)
     dt = time.perf_counter() - t0
-    
-    print(
-        f"  [model call: {dt:.2f}s · {res.metrics.prompt_tokens}→{res.metrics.completion_tokens} tokens]"
+
+    banner = (
+        f"  [model call: {dt:.2f}s · "
+        f"{res.metrics.prompt_tokens}→{res.metrics.completion_tokens} tokens]"
     )
+    print(banner)
     return res.message.strip()
+
 
 async def example_state_flow():
     """See how state accumulates through nodes."""
@@ -43,7 +49,7 @@ async def example_state_flow():
         print(f"  Step C receives: {list(inputs.keys())}")
         # Final node delegates to a real Agent.
         doubled = inputs.get("doubled", 0)
-        
+
         ai = _llm_call(
             f"Briefly comment on a graph that doubled the value to {doubled}.",
         )
@@ -68,8 +74,11 @@ async def example_state_flow():
             print(f"  {key}: {value}")
     print()
 
+
 async def main():
+    """Run the state-flow example from the command line."""
     await example_state_flow()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

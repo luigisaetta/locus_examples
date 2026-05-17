@@ -65,6 +65,8 @@ Examples:
 See `docs/how-to/oci-models.md` for the full transport story.
 """
 
+# pylint: disable=import-outside-toplevel
+
 import os
 import sys
 from collections.abc import AsyncIterator
@@ -107,6 +109,7 @@ class MockModel(BaseModel):
         **kwargs: Any,
     ) -> ModelResponse:
         """Return a mock response based on the last message."""
+        del kwargs
         last_msg = messages[-1].content or "" if messages else ""
         response = self._get_response(last_msg.lower(), tools)
         return ModelResponse(
@@ -127,7 +130,7 @@ class MockModel(BaseModel):
                 return response
         return self._responses["default"]
 
-    def _get_tool_response(self, prompt: str, tools: list[dict[str, Any]]) -> str:
+    def _get_tool_response(self, _prompt: str, _tools: list[dict[str, Any]]) -> str:
         """Simulate tool usage response."""
         return "I'll use the available tools to help with that."
 
@@ -198,16 +201,15 @@ def get_model(**kwargs: Any) -> Any:
     if provider == "mock":
         kwargs.pop("model_id", None)  # MockModel ignores model_id
         return MockModel(**kwargs)
-    elif provider == "oci":
+    if provider == "oci":
         return _get_oci_model(**kwargs)
-    elif provider == "openai":
+    if provider == "openai":
         return _get_openai_model(**kwargs)
-    elif provider == "anthropic":
+    if provider == "anthropic":
         return _get_anthropic_model(**kwargs)
-    else:
-        raise ValueError(
-            f"Unknown model provider: {provider}. Use 'mock', 'oci', 'openai', or 'anthropic'."
-        )
+    raise ValueError(
+        f"Unknown model provider: {provider}. Use 'mock', 'oci', 'openai', or 'anthropic'."
+    )
 
 
 def get_model_b(**kwargs: Any) -> Any:
@@ -260,7 +262,9 @@ def _pick_oci_transport(model_id: str) -> str:
 
 def _get_oci_model(**kwargs: Any) -> Any:
     """Get an OCI GenAI model — picks V1 vs SDK transport per model family."""
-    model_id = kwargs.pop("model_id", os.environ.get("LOCUS_MODEL_ID", "openai.gpt-5.5-2026-04-23"))
+    model_id = kwargs.pop(
+        "model_id", os.environ.get("LOCUS_MODEL_ID", "openai.gpt-5.5-2026-04-23")
+    )
     transport = _pick_oci_transport(model_id)
     if transport == "v1":
         return _get_oci_v1_model(model_id, **kwargs)
@@ -357,7 +361,9 @@ def _get_anthropic_model(**kwargs: Any) -> Any:
     """Get Anthropic model."""
     from locus.models.native.anthropic import AnthropicModel
 
-    model_id = kwargs.pop("model_id", os.environ.get("LOCUS_MODEL_ID", "claude-sonnet-4-20250514"))
+    model_id = kwargs.pop(
+        "model_id", os.environ.get("LOCUS_MODEL_ID", "claude-sonnet-4-20250514")
+    )
     api_key = os.environ.get("ANTHROPIC_API_KEY")
 
     if not api_key:

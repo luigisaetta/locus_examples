@@ -7,6 +7,7 @@ set:
 
     in a .env file and source
 """
+
 import asyncio
 from locus.agent import Agent
 from locus.core.events import (
@@ -23,12 +24,13 @@ You are a helpful assistant.
 Provide always a clear an complete answer.
 """
 
-agent = Agent(model=MODEL,
-              system_prompt=SYSTEM_PROMPT)
+agent = Agent(model=MODEL, system_prompt=SYSTEM_PROMPT)
 
 QUESTION = "25*4 is greater or lower than 101? Explain your answer."
 
+
 async def example_events():
+    """Run an agent with streaming and print the emitted Locus events."""
     print("")
 
     print("Question: " + QUESTION)
@@ -44,7 +46,9 @@ async def example_events():
             print(f"  Tool Calls: {len(event.tool_calls)}")
             if event.reasoning:
                 preview = (
-                    event.reasoning[:80] + "..." if len(event.reasoning) > 80 else event.reasoning
+                    event.reasoning[:80] + "..."
+                    if len(event.reasoning) > 80
+                    else event.reasoning
                 )
                 print(f"  Reasoning:  {preview}")
 
@@ -65,8 +69,11 @@ async def example_events():
 
     print()
 
+
 def main():
+    """Run the streaming example from the command line."""
     asyncio.run(example_events())
+
 
 if __name__ == "__main__":
     main()
