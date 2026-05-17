@@ -5,10 +5,15 @@ from __future__ import annotations
 import logging
 
 from locus.agent import Agent
-from locus.rag import create_rag_tool
 from locus.server import AgentServer
 
-from demos.demo_rag.common import configure_logging, configure_warnings, build_retriever
+from demos.demo_rag.common import (
+    build_agent_model,
+    build_retriever,
+    configure_logging,
+    configure_warnings,
+    create_search_tool,
+)
 from demos.demo_rag.config import DemoConfig, load_config
 
 LOGGER = logging.getLogger(__name__)
@@ -37,8 +42,8 @@ def build_agent(config: DemoConfig) -> Agent:
 
     LOGGER.info("Creating Agent with model: %s", config.agent_model)
     return Agent(
-        model=config.agent_model,
-        tools=[create_rag_tool(retriever)],
+        model=build_agent_model(config),
+        tools=[create_search_tool(retriever)],
         system_prompt=SYSTEM_PROMPT,
     )
 
