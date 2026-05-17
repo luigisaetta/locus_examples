@@ -1,10 +1,15 @@
-# locus_examples
+# Locus Examples
+
+![Python >= 3.11](https://img.shields.io/badge/python-%3E%3D3.11-blue)
+![Code style: Black](https://img.shields.io/badge/code%20style-black-000000)
+![Lint: Pylint](https://img.shields.io/badge/lint-pylint-yellow)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
 This repository contains small, runnable examples and demos for exploring the
-Oracle Locus framework. The goal is to keep each example focused, easy to run
-from the repository root, and useful as a reference for agents, multi-agent
-flows, RAG pipelines, Oracle-backed vector stores, HTTP serving, and A2A
-interoperability.
+[Oracle Locus](https://oracle-samples.github.io/locus/). The goal is to keep
+each example focused, easy to run from the repository root, and useful as a
+reference for agents, multi-agent flows, RAG pipelines, Oracle-backed vector
+stores, HTTP serving, and A2A interoperability.
 
 Use the `locus_examples` conda environment for local commands.
 
@@ -12,7 +17,7 @@ Use the `locus_examples` conda environment for local commands.
 
 | Demo | Description |
 | --- | --- |
-| [RAG with OracleVectorStore](demos/demo_rag) | End-to-end RAG demo using Locus, OCI embeddings, and `OracleVectorStore`. It loads PDFs from a local `pdf/` folder, stores chunks in Oracle Database native vector storage, serves a RAG-enabled Locus agent over HTTP, and includes CLI clients for querying the server. **This demo also exposes the same search agent through an A2A server** with an Agent Card and an A2A query client. |
+| [RAG with OracleVectorStore](demos/demo_rag) | End-to-end RAG demo using [Oracle Locus](https://oracle-samples.github.io/locus/), OCI embeddings, and `OracleVectorStore`. It loads PDFs from a local `pdf/` folder, stores chunks in Oracle Database native vector storage, serves a RAG-enabled Locus agent over HTTP, and includes CLI clients for querying the server. **This demo also exposes the same search agent through an A2A server** with an Agent Card and an A2A query client. |
 
 ## Examples
 
