@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import warnings
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -14,6 +15,16 @@ from locus.rag.stores.oracle import OracleVectorStore
 from demos.demo_rag.config import DemoConfig, load_config
 
 LOGGER = logging.getLogger(__name__)
+
+
+def configure_warnings() -> None:
+    """Hide known third-party warnings that are not actionable for this demo."""
+    warnings.filterwarnings(
+        "ignore",
+        message="The 'strict' parameter is no longer needed on Python 3\\+.*",
+        category=FutureWarning,
+        module="urllib3.poolmanager",
+    )
 
 
 def configure_logging(level: str) -> None:
@@ -186,6 +197,7 @@ async def load_all_pdfs(config: DemoConfig, pdf_files: Iterable[Path]) -> int:
 
 async def run() -> None:
     """Run the PDF loading workflow."""
+    configure_warnings()
     config = load_config()
     configure_logging(config.log_level)
 
