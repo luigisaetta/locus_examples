@@ -99,6 +99,23 @@ class AgentServerClientConfig:
 
 
 @dataclass(frozen=True)
+class A2AServerConfig:
+    """A2A server configuration.
+
+    Attributes:
+        host: Bind host used by the A2A server.
+        port: Bind port used by the A2A server.
+        url: Public URL advertised in the A2A Agent Card.
+        api_key: Optional bearer token required by the A2A server.
+    """
+
+    host: str
+    port: int
+    url: str
+    api_key: str | None
+
+
+@dataclass(frozen=True)
 class DemoConfig:
     """Runtime configuration for loading PDFs into OracleVectorStore.
 
@@ -108,6 +125,7 @@ class DemoConfig:
         embeddings: OCI embedding provider configuration.
         agent_model: Locus model name used by the RAG agent.
         agent_server: AgentServer client configuration.
+        a2a_server: A2A server configuration.
         runtime: Demo runtime behavior configuration.
     """
 
@@ -116,6 +134,7 @@ class DemoConfig:
     embeddings: OCIEmbeddingDemoConfig
     agent_model: str
     agent_server: AgentServerClientConfig
+    a2a_server: A2AServerConfig
     runtime: RuntimeConfig
 
 
@@ -157,6 +176,12 @@ def load_config() -> DemoConfig:
         agent_model=_env("DEMO_RAG_AGENT_MODEL", "oci:openai.gpt-5.5"),
         agent_server=AgentServerClientConfig(
             url=_env("DEMO_RAG_AGENT_SERVER_URL", "http://127.0.0.1:8000"),
+        ),
+        a2a_server=A2AServerConfig(
+            host=_env("DEMO_RAG_A2A_HOST", "127.0.0.1"),
+            port=_int_env("DEMO_RAG_A2A_PORT", 7421),
+            url=_env("DEMO_RAG_A2A_URL", "http://127.0.0.1:7421"),
+            api_key=_optional_env("DEMO_RAG_A2A_API_KEY"),
         ),
         runtime=RuntimeConfig(
             chunk_size=_int_env("DEMO_RAG_CHUNK_SIZE", 1000),
