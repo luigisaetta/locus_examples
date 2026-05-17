@@ -88,6 +88,17 @@ class RuntimeConfig:
 
 
 @dataclass(frozen=True)
+class AgentServerClientConfig:
+    """AgentServer client configuration.
+
+    Attributes:
+        url: Base URL of the running AgentServer.
+    """
+
+    url: str
+
+
+@dataclass(frozen=True)
 class DemoConfig:
     """Runtime configuration for loading PDFs into OracleVectorStore.
 
@@ -96,6 +107,7 @@ class DemoConfig:
         oracle: Oracle vector store configuration.
         embeddings: OCI embedding provider configuration.
         agent_model: Locus model name used by the RAG agent.
+        agent_server: AgentServer client configuration.
         runtime: Demo runtime behavior configuration.
     """
 
@@ -103,6 +115,7 @@ class DemoConfig:
     oracle: OracleStoreConfig
     embeddings: OCIEmbeddingDemoConfig
     agent_model: str
+    agent_server: AgentServerClientConfig
     runtime: RuntimeConfig
 
 
@@ -142,6 +155,9 @@ def load_config() -> DemoConfig:
             config_file=_env("DEMO_RAG_OCI_CONFIG_FILE", "~/.oci/config"),
         ),
         agent_model=_env("DEMO_RAG_AGENT_MODEL", "oci:openai.gpt-5.5"),
+        agent_server=AgentServerClientConfig(
+            url=_env("DEMO_RAG_AGENT_SERVER_URL", "http://127.0.0.1:8000"),
+        ),
         runtime=RuntimeConfig(
             chunk_size=_int_env("DEMO_RAG_CHUNK_SIZE", 1000),
             chunk_overlap=_int_env("DEMO_RAG_CHUNK_OVERLAP", 200),
