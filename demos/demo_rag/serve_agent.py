@@ -4,51 +4,16 @@ from __future__ import annotations
 
 import logging
 
-from locus.agent import Agent
 from locus.server import AgentServer
 
 from demos.demo_rag.common import (
-    build_agent_model,
-    build_retriever,
+    build_agent,
     configure_logging,
     configure_warnings,
-    create_search_tool,
 )
 from demos.demo_rag.config import DemoConfig, load_config
 
 LOGGER = logging.getLogger(__name__)
-
-SYSTEM_PROMPT = """
-You are a helpful assistant.
-Use the search_knowledge tool when the user asks about information that may be
-stored in the document knowledge base.
-Base your answer only on documents returned by search_knowledge.
-If search_knowledge does not return enough relevant information, say that the
-available documents do not contain enough evidence to answer.
-When you use search_knowledge, always include a "Retrieved chunks" section after
-the answer. For each chunk you relied on, list its id, score, metadata, and a
-short excerpt from the returned content. Do not invent chunk details.
-"""
-
-
-def build_agent(config: DemoConfig) -> Agent:
-    """Create a Locus Agent with a RAG search tool.
-
-    Args:
-        config: Demo configuration loaded from environment variables.
-
-    Returns:
-        Configured Locus Agent using OracleVectorStore through RAGRetriever.
-    """
-    LOGGER.info("Creating RAG retriever for agent tool")
-    retriever = build_retriever(config)
-
-    LOGGER.info("Creating Agent with model: %s", config.agent_model)
-    return Agent(
-        model=build_agent_model(config),
-        tools=[create_search_tool(retriever)],
-        system_prompt=SYSTEM_PROMPT,
-    )
 
 
 def build_server(config: DemoConfig) -> AgentServer:

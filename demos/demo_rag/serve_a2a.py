@@ -6,9 +6,8 @@ import logging
 
 from locus.a2a import A2AServer, AgentSkill
 
-from demos.demo_rag.common import configure_logging, configure_warnings
+from demos.demo_rag.common import build_agent, configure_logging, configure_warnings
 from demos.demo_rag.config import DemoConfig, load_config
-from demos.demo_rag.serve_agent import build_agent
 
 LOGGER = logging.getLogger(__name__)
 

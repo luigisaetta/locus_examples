@@ -7,6 +7,7 @@ import os
 import warnings
 from typing import Any
 
+from locus.agent import Agent
 from locus.models.providers.oci import OCIOpenAIModel
 from locus.rag.embeddings.oci import OCIEmbeddings
 from locus.rag.retriever import _escape_spotlight
@@ -15,6 +16,7 @@ from locus.rag.stores.oracle import OracleVectorStore
 from locus.tools import tool
 
 from demos.demo_rag.config import DemoConfig
+from demos.demo_rag.prompts import RAG_SYSTEM_PROMPT
 
 LOGGER = logging.getLogger(__name__)
 
@@ -180,6 +182,26 @@ def create_search_tool(
         }
 
     return search_knowledge
+
+
+def build_agent(config: DemoConfig) -> Agent:
+    """Create a Locus Agent with a RAG search tool.
+
+    Args:
+        config: Demo configuration loaded from environment variables.
+
+    Returns:
+        Configured Locus Agent using OracleVectorStore through RAGRetriever.
+    """
+    LOGGER.info("Creating RAG retriever for agent tool")
+    retriever = build_retriever(config)
+
+    LOGGER.info("Creating Agent with model: %s", config.agent_model)
+    return Agent(
+        model=build_agent_model(config),
+        tools=[create_search_tool(retriever)],
+        system_prompt=RAG_SYSTEM_PROMPT,
+    )
 
 
 def build_agent_model(config: DemoConfig) -> str | Any:
