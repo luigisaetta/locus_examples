@@ -75,10 +75,14 @@ def main() -> None:
     config = load_config()
     configure_logging(config.runtime.log_level)
 
-    LOGGER.info("Starting RAG AgentServer")
+    LOGGER.info(
+        "Starting RAG AgentServer at %s:%s",
+        config.agent_server.host,
+        config.agent_server.port,
+    )
     server = build_server(config)
 
-    server.run(host="127.0.0.1", port=8000)
+    server.run(host=config.agent_server.host, port=config.agent_server.port)
 
 
 if __name__ == "__main__":

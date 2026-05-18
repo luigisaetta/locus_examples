@@ -54,7 +54,9 @@ python -m demos.demo_rag.query_a2a "What does the knowledge base say about ...?"
   operation.
 - The demo default table name is `locus_demo_rag_vectors`.
 - The agent model is configured with `DEMO_RAG_AGENT_MODEL`.
-- The query client uses `DEMO_RAG_AGENT_SERVER_URL`.
+- The AgentServer uses `DEMO_RAG_AGENT_SERVER_HOST` and
+  `DEMO_RAG_AGENT_SERVER_PORT`; the query client uses
+  `DEMO_RAG_AGENT_SERVER_URL`.
 - The A2A server uses `DEMO_RAG_A2A_HOST`, `DEMO_RAG_A2A_PORT`,
   `DEMO_RAG_A2A_URL`, and `DEMO_RAG_A2A_API_KEY`.
 - PDF text extraction requires `pypdf` or `PyPDF2` in the conda environment.

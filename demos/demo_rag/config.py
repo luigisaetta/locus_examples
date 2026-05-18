@@ -88,13 +88,17 @@ class RuntimeConfig:
 
 
 @dataclass(frozen=True)
-class AgentServerClientConfig:
-    """AgentServer client configuration.
+class AgentServerConfig:
+    """AgentServer configuration.
 
     Attributes:
+        host: Bind host used by the AgentServer.
+        port: Bind port used by the AgentServer.
         url: Base URL of the running AgentServer.
     """
 
+    host: str
+    port: int
     url: str
 
 
@@ -124,7 +128,7 @@ class DemoConfig:
         oracle: Oracle vector store configuration.
         embeddings: OCI embedding provider configuration.
         agent_model: Locus model name used by the RAG agent.
-        agent_server: AgentServer client configuration.
+        agent_server: AgentServer configuration.
         a2a_server: A2A server configuration.
         runtime: Demo runtime behavior configuration.
     """
@@ -133,7 +137,7 @@ class DemoConfig:
     oracle: OracleStoreConfig
     embeddings: OCIEmbeddingDemoConfig
     agent_model: str
-    agent_server: AgentServerClientConfig
+    agent_server: AgentServerConfig
     a2a_server: A2AServerConfig
     runtime: RuntimeConfig
 
@@ -174,7 +178,9 @@ def load_config() -> DemoConfig:
             config_file=_env("DEMO_RAG_OCI_CONFIG_FILE", "~/.oci/config"),
         ),
         agent_model=_env("DEMO_RAG_AGENT_MODEL", "oci:openai.gpt-5.5"),
-        agent_server=AgentServerClientConfig(
+        agent_server=AgentServerConfig(
+            host=_env("DEMO_RAG_AGENT_SERVER_HOST", "127.0.0.1"),
+            port=_int_env("DEMO_RAG_AGENT_SERVER_PORT", 8000),
             url=_env("DEMO_RAG_AGENT_SERVER_URL", "http://127.0.0.1:8000"),
         ),
         a2a_server=A2AServerConfig(
