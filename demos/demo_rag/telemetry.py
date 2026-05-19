@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+from contextvars import ContextVar, Token
 import logging
 import time
 from typing import TYPE_CHECKING, Any
@@ -19,7 +20,6 @@ from locus.hooks.provider import (
     HookPriority,
     HookProvider,
 )
-from opentelemetry import context as otel_context
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
@@ -34,6 +34,10 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 _LANGFUSE_OTEL_CONFIGURED = False
+_CURRENT_SPAN_CONTEXT: ContextVar[Any | None] = ContextVar(
+    "demo_rag_current_span_context",
+    default=None,
+)
 
 
 def build_hooks(config: DemoConfig) -> list[Any]:
@@ -69,9 +73,11 @@ class LangfuseTelemetryHook(HookProvider):
         """
         self._service_name = service_name
         self._tracer = trace.get_tracer(tracer_name)
-        self._invocation_spans: dict[str, tuple[Span, object]] = {}
-        self._iteration_spans: dict[tuple[str, int], tuple[Span, object]] = {}
-        self._tool_spans: dict[str, tuple[Span, object, float]] = {}
+        self._invocation_spans: dict[str, tuple[Span, Token[Any | None]]] = {}
+        self._iteration_spans: dict[tuple[str, int], tuple[Span, Token[Any | None]]] = (
+            {}
+        )
+        self._tool_spans: dict[str, tuple[Span, Token[Any | None], float]] = {}
 
     @property
     def priority(self) -> int:
@@ -112,7 +118,7 @@ class LangfuseTelemetryHook(HookProvider):
                 "service.name": self._service_name,
             },
         )
-        token = otel_context.attach(trace.set_span_in_context(span))
+        token = _CURRENT_SPAN_CONTEXT.set(trace.set_span_in_context(span))
         self._invocation_spans[state.run_id] = (span, token)
         return state
 
@@ -144,7 +150,7 @@ class LangfuseTelemetryHook(HookProvider):
             span.set_status(Status(StatusCode.ERROR, "Agent invocation failed"))
 
         span.end()
-        otel_context.detach(token)
+        _CURRENT_SPAN_CONTEXT.reset(token)
 
     async def on_iteration_start(
         self,
@@ -154,13 +160,14 @@ class LangfuseTelemetryHook(HookProvider):
         """Start an iteration span under the active invocation span."""
         span = self._tracer.start_span(
             f"agent.iteration.{iteration}",
+            context=_CURRENT_SPAN_CONTEXT.get(),
             attributes={
                 "locus.iteration": iteration,
                 "locus.confidence": state.confidence,
                 "locus.messages": len(state.messages),
             },
         )
-        token = otel_context.attach(trace.set_span_in_context(span))
+        token = _CURRENT_SPAN_CONTEXT.set(trace.set_span_in_context(span))
         self._iteration_spans[(state.run_id, iteration)] = (span, token)
 
     async def on_iteration_end(
@@ -182,14 +189,18 @@ class LangfuseTelemetryHook(HookProvider):
         )
         span.set_status(Status(StatusCode.OK))
         span.end()
-        otel_context.detach(token)
+        _CURRENT_SPAN_CONTEXT.reset(token)
 
     async def on_before_tool_call(self, event: BeforeToolCallEvent) -> None:
         """Start a tool span under the active iteration or invocation span."""
         span_attrs: dict[str, Any] = {"locus.tool_name": event.tool_name}
 
-        span = self._tracer.start_span(f"tool.{event.tool_name}", attributes=span_attrs)
-        token = otel_context.attach(trace.set_span_in_context(span))
+        span = self._tracer.start_span(
+            f"tool.{event.tool_name}",
+            context=_CURRENT_SPAN_CONTEXT.get(),
+            attributes=span_attrs,
+        )
+        token = _CURRENT_SPAN_CONTEXT.set(trace.set_span_in_context(span))
         self._tool_spans[_tool_span_key(event)] = (span, token, time.perf_counter())
 
     async def on_after_tool_call(self, event: AfterToolCallEvent) -> None:
@@ -209,7 +220,7 @@ class LangfuseTelemetryHook(HookProvider):
             span.set_status(Status(StatusCode.OK))
 
         span.end()
-        otel_context.detach(token)
+        _CURRENT_SPAN_CONTEXT.reset(token)
 
 
 def configure_langfuse_otel(config: DemoConfig) -> None:
