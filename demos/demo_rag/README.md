@@ -30,7 +30,28 @@ Install the demo runtime dependencies once:
 
 ```bash
 conda install -n locus_examples -c conda-forge oracledb pypdf
+pip install -r demos/demo_rag/requirements.txt
 ```
+
+## Langfuse tracing
+
+The A2A and HTTP agents can export Locus invocation, iteration, and tool-call
+spans to Langfuse through OpenTelemetry. The demo uses a custom hook so
+`tool.search_knowledge` spans are children of the same `agent.invocation` trace.
+
+Enable tracing in `demos/demo_rag/.env`:
+
+```bash
+export DEMO_RAG_LANGFUSE_ENABLED=true
+export DEMO_RAG_LANGFUSE_ENDPOINT=https://cloud.langfuse.com/api/public/otel/v1/traces
+export DEMO_RAG_LANGFUSE_PUBLIC_KEY=pk-lf-...
+export DEMO_RAG_LANGFUSE_SECRET_KEY=sk-lf-...
+export DEMO_RAG_LANGFUSE_SERVICE_NAME=locus-demo-rag-a2a
+export DEMO_RAG_LANGFUSE_ENVIRONMENT=local
+```
+
+The hook records operational metadata only. Tool arguments, retrieved chunks,
+and final results are not exported as span attributes.
 
 Load PDF files from the root `pdf` folder into OracleVectorStore:
 
@@ -78,6 +99,10 @@ python -m demos.demo_rag.query_a2a "What does the knowledge base say about ...?"
   `DEMO_RAG_AGENT_SERVER_URL`.
 - The A2A server uses `DEMO_RAG_A2A_HOST`, `DEMO_RAG_A2A_PORT`,
   `DEMO_RAG_A2A_URL`, and `DEMO_RAG_A2A_API_KEY`.
+- Langfuse tracing uses `DEMO_RAG_LANGFUSE_ENABLED`,
+  `DEMO_RAG_LANGFUSE_ENDPOINT`, `DEMO_RAG_LANGFUSE_PUBLIC_KEY`,
+  `DEMO_RAG_LANGFUSE_SECRET_KEY`, `DEMO_RAG_LANGFUSE_SERVICE_NAME`, and
+  `DEMO_RAG_LANGFUSE_ENVIRONMENT`.
 - PDF text extraction requires `pypdf` or `PyPDF2` in the conda environment.
 - Oracle connectivity requires `oracledb` in the conda environment.
 - Runtime configuration is read from `demos/demo_rag/.env`; use
