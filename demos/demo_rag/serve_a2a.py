@@ -1,4 +1,9 @@
-"""Serve the RAG-enabled Locus Agent through the A2A protocol."""
+"""
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: A2A server entry point for the RAG-enabled Locus agent.
+"""
 
 from __future__ import annotations
 

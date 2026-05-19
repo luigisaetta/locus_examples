@@ -1,4 +1,9 @@
-"""Configuration helpers for the OracleVectorStore RAG demo."""
+"""
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: Configuration helpers for the OracleVectorStore RAG demo.
+"""
 
 from __future__ import annotations
 
@@ -58,6 +63,7 @@ class OCIEmbeddingDemoConfig:
         compartment_id: OCI compartment OCID for GenAI calls.
         profile_name: OCI config profile name.
         auth_type: OCI authentication type.
+        region: OCI GenAI region used when no explicit endpoint is set.
         service_endpoint: Optional OCI GenAI service endpoint.
         config_file: OCI config file path.
     """
@@ -66,6 +72,7 @@ class OCIEmbeddingDemoConfig:
     compartment_id: str
     profile_name: str
     auth_type: str
+    region: str
     service_endpoint: str | None
     config_file: str
 
@@ -174,6 +181,12 @@ def load_config() -> DemoConfig:
             compartment_id=_env("DEMO_RAG_OCI_COMPARTMENT_ID", ""),
             profile_name=_env("DEMO_RAG_OCI_PROFILE_NAME", "DEFAULT"),
             auth_type=_env("DEMO_RAG_OCI_AUTH_TYPE", "api_key"),
+            region=_env(
+                "DEMO_RAG_OCI_REGION",
+                os.environ.get("LOCUS_OCI_REGION")
+                or os.environ.get("OCI_REGION")
+                or "us-chicago-1",
+            ),
             service_endpoint=_optional_env("DEMO_RAG_OCI_SERVICE_ENDPOINT"),
             config_file=_env("DEMO_RAG_OCI_CONFIG_FILE", "~/.oci/config"),
         ),

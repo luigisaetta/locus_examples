@@ -1,14 +1,18 @@
-"""Shared builders for the RAG demo components."""
+"""
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: Shared builders and utilities for the RAG demo components.
+"""
 
 from __future__ import annotations
 
 import logging
-import os
 import warnings
 from typing import Any
 
 from locus.agent import Agent
-from locus.models.providers.oci import OCIOpenAIModel
+from locus.models.providers.oci import OCIOpenAIModel, build_oci_openai_base_url
 from locus.rag.embeddings.oci import OCIEmbeddings
 from locus.rag.retriever import _escape_spotlight
 from locus.rag.retriever import RAGRetriever
@@ -19,6 +23,11 @@ from demos.demo_rag.config import DemoConfig
 from demos.demo_rag.prompts import RAG_SYSTEM_PROMPT
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _genai_endpoint(region: str) -> str:
+    """Build the OCI Generative AI endpoint for a region."""
+    return f"https://inference.generativeai.{region}.oci.oraclecloud.com"
 
 
 def configure_warnings() -> None:
@@ -52,13 +61,20 @@ def build_embedder(config: DemoConfig) -> OCIEmbeddings:
     Returns:
         Configured Locus OCI embeddings provider.
     """
-    LOGGER.info("Creating OCIEmbeddings with model: %s", config.embeddings.model_id)
+    service_endpoint = config.embeddings.service_endpoint or _genai_endpoint(
+        config.embeddings.region
+    )
+    LOGGER.info(
+        "Creating OCIEmbeddings with model: %s endpoint: %s",
+        config.embeddings.model_id,
+        service_endpoint,
+    )
     return OCIEmbeddings(
         model_id=config.embeddings.model_id,
         compartment_id=config.embeddings.compartment_id,
         profile_name=config.embeddings.profile_name,
         auth_type=config.embeddings.auth_type,
-        service_endpoint=config.embeddings.service_endpoint,
+        service_endpoint=service_endpoint,
         config_file=config.embeddings.config_file,
     )
 
@@ -218,13 +234,16 @@ def build_agent_model(config: DemoConfig) -> str | Any:
     if provider != "oci" or not model_id:
         return config.agent_model
 
-    region = os.environ.get("LOCUS_OCI_REGION") or os.environ.get("OCI_REGION")
+    region = config.embeddings.region
+    base_url = build_oci_openai_base_url(region)
+    LOGGER.info("Creating OCI LLM model with region: %s base_url: %s", region, base_url)
     if config.embeddings.auth_type == "api_key":
         return OCIOpenAIModel(
             model=model_id,
             profile=config.embeddings.profile_name,
             compartment_id=config.embeddings.compartment_id or None,
             region=region,
+            base_url=base_url,
             config_file=config.embeddings.config_file,
         )
 
@@ -233,6 +252,7 @@ def build_agent_model(config: DemoConfig) -> str | Any:
         auth_type=config.embeddings.auth_type,
         compartment_id=config.embeddings.compartment_id or None,
         region=region,
+        base_url=base_url,
         config_file=config.embeddings.config_file,
     )
 

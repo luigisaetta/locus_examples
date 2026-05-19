@@ -1,4 +1,8 @@
-"""Example05: expose a Locus ``StateGraph`` through ``AgentServer``.
+"""
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: Example showing how to expose a StateGraph through AgentServer.
 
 ``AgentServer`` is designed around the Locus Agent runtime shape: it calls an
 object's async ``run(prompt, thread_id=..., metadata=...)`` method and consumes

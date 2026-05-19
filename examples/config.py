@@ -1,8 +1,8 @@
-# Copyright (c) 2025, 2026 Oracle and/or its affiliates.
-# Licensed under the Universal Permissive License v1.0 as shown at
-# https://oss.oracle.com/licenses/upl/
 """
-Shared configuration for Locus tutorials.
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: Shared model configuration utilities for Locus tutorials.
 
 Tutorials are designed to work with any LLM provider. By default, they use
 a mock model so you can explore Locus's features without API credentials.
@@ -64,6 +64,10 @@ Examples:
 
 See `docs/how-to/oci-models.md` for the full transport story.
 """
+
+# Copyright (c) 2025, 2026 Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v1.0 as shown at
+# https://oss.oracle.com/licenses/upl/
 
 # pylint: disable=import-outside-toplevel
 

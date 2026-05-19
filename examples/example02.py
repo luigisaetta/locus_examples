@@ -1,5 +1,8 @@
 """
-Example02: With streaming.
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: Minimal example showing streamed Locus Agent events.
 
 set:
     export OCI_PROFILE=DEFAULT

@@ -19,3 +19,8 @@ vector stores.
 - When the working tree contains unrelated changes, stage and commit only the
   files that belong to the current task.
 - Use Google-style docstrings for new demo functions and classes.
+- Every Python file must start with an English multiline string header
+  surrounded by triple double quotes (`"""`). `Author: L. Saetta` must start
+  on the line after the opening triple double quotes, followed by
+  `Last update: <YYYY-MM-DD>`, `License: MIT`, and
+  `Description: <brief description>`.

@@ -1,4 +1,9 @@
-"""Serve a RAG-enabled Locus Agent backed by OracleVectorStore."""
+"""
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: HTTP server entry point for the RAG-enabled Locus agent.
+"""
 
 from __future__ import annotations
 

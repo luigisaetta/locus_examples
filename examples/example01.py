@@ -1,5 +1,8 @@
 """
-Example01: A simple example of using the Agent class.
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: Minimal example showing a synchronous Locus Agent call.
 
 set:
     export OCI_PROFILE=DEFAULT

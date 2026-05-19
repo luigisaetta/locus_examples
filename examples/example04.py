@@ -1,4 +1,8 @@
-"""Example04: build a Locus ``StateGraph`` with callable step objects.
+"""
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: Class-based StateGraph example using callable step objects.
 
 This example is the class-based counterpart of ``example03``.  Instead of
 registering plain async functions as graph nodes, each node is an instance of a

@@ -1,4 +1,9 @@
-"""Load root-level PDF documents into an OracleVectorStore using Locus."""
+"""
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: PDF loading utility for the OracleVectorStore RAG demo.
+"""
 
 from __future__ import annotations
 

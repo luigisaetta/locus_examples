@@ -1,4 +1,9 @@
-"""Query the RAG AgentServer from the command line."""
+"""
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: Command-line client for querying the RAG AgentServer.
+"""
 
 from __future__ import annotations
 
@@ -95,13 +100,18 @@ def invoke_agent(config: DemoConfig, query: str, thread_id: str | None = None) -
         return response.json()
 
 
-def print_result(result: Any) -> None:
-    """Print a complete AgentServer result as formatted JSON.
+def print_result(result: dict[str, Any]) -> None:
+    """Print the final answer and response metadata.
 
     Args:
         result: Decoded response object returned by the AgentServer.
     """
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    metadata = {key: value for key, value in result.items() if key != "message"}
+    output = {
+        "answer": result.get("message", ""),
+        "metadata": metadata,
+    }
+    print(json.dumps(output, indent=2, ensure_ascii=False))
 
 
 def main() -> None:

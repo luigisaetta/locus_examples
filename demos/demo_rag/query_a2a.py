@@ -1,4 +1,9 @@
-"""Query the RAG A2A server from the command line."""
+"""
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: Command-line client for querying the RAG A2A server.
+"""
 
 from __future__ import annotations
 
@@ -68,6 +73,20 @@ def build_message(query: str) -> Message:
     )
 
 
+def _to_plain_dict(value: Any) -> dict[str, Any]:
+    """Convert an A2A model or mapping to a plain dictionary.
+
+    Args:
+        value: JSON-serializable value or Pydantic model.
+
+    Returns:
+        Plain dictionary representation.
+    """
+    if hasattr(value, "model_dump"):
+        value = value.model_dump()
+    return dict(value)
+
+
 def print_json(title: str, value: Any) -> None:
     """Print a titled JSON value.
 
@@ -75,11 +94,52 @@ def print_json(title: str, value: Any) -> None:
         title: Human-readable section title.
         value: JSON-serializable value or Pydantic model.
     """
-    if hasattr(value, "model_dump"):
-        value = value.model_dump()
-
     print(f"\n=== {title} ===")
-    print(json.dumps(value, indent=2, ensure_ascii=False, default=str))
+    print(json.dumps(_to_plain_dict(value), indent=2, ensure_ascii=False, default=str))
+
+
+def _extract_final_answer(task: dict[str, Any]) -> str:
+    """Extract the final agent answer from an A2A task.
+
+    Args:
+        task: Plain A2A task dictionary.
+
+    Returns:
+        Final text answer, or an empty string when absent.
+    """
+    artifacts = task.get("artifacts") or []
+    for artifact in reversed(artifacts):
+        for part in artifact.get("parts", []):
+            text = part.get("text")
+            if text:
+                return str(text)
+    status = task.get("status") or {}
+    message = status.get("message") or {}
+    for part in message.get("parts", []):
+        text = part.get("text")
+        if text:
+            return str(text)
+    return ""
+
+
+def print_result(task: Any) -> None:
+    """Print the final answer and A2A task metadata.
+
+    Args:
+        task: A2A task returned by the server.
+    """
+    task_dict = _to_plain_dict(task)
+    metadata = {
+        "id": task_dict.get("id"),
+        "contextId": task_dict.get("contextId"),
+        "status": task_dict.get("status"),
+        "metadata": task_dict.get("metadata"),
+    }
+    output = {
+        "answer": _extract_final_answer(task_dict),
+        "metadata": metadata,
+    }
+    print(json.dumps(output, indent=2, ensure_ascii=False, default=str))
 
 
 async def run_query(config: DemoConfig, query: str) -> None:
@@ -97,7 +157,7 @@ async def run_query(config: DemoConfig, query: str) -> None:
 
     LOGGER.info("Sending A2A message/send request")
     task = await client.send_message(build_message(query))
-    print_json("A2A Task Result", task)
+    print_result(task)
 
 
 def main() -> None:

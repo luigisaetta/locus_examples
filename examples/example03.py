@@ -1,4 +1,9 @@
-"""Example03: demonstrate a simple Locus StateGraph with async functions."""
+"""
+Author: L. Saetta
+Last update: 2026-05-19
+License: MIT
+Description: Function-based StateGraph example with async graph nodes.
+"""
 
 import time
 import asyncio

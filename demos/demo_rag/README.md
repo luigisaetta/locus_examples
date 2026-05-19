@@ -41,7 +41,7 @@ source demos/demo_rag/.env
 python -m demos.demo_rag.serve_a2a
 ```
 
-Fetch the A2A Agent Card and query the running A2A server from another terminal:
+Query the running A2A server from another terminal:
 
 ```bash
 source demos/demo_rag/.env
