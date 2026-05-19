@@ -22,6 +22,7 @@ from locus.tools import tool
 
 from demos.demo_rag.config import DemoConfig
 from demos.demo_rag.prompts import RAG_SYSTEM_PROMPT
+from demos.demo_rag.telemetry import build_hooks
 
 LOGGER = logging.getLogger(__name__)
 
@@ -267,6 +268,7 @@ def build_agent(config: DemoConfig) -> Agent:
             )
         ],
         system_prompt=RAG_SYSTEM_PROMPT,
+        hooks=build_hooks(config),
     )
 
 

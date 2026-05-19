@@ -148,6 +148,27 @@ class A2AServerConfig:
 
 
 @dataclass(frozen=True)
+class LangfuseConfig:
+    """Langfuse OpenTelemetry export configuration.
+
+    Attributes:
+        enabled: Whether Langfuse OpenTelemetry export is enabled.
+        endpoint: OTLP HTTP traces endpoint used by the exporter.
+        public_key: Langfuse public key for Basic Auth.
+        secret_key: Langfuse secret key for Basic Auth.
+        service_name: OpenTelemetry service name for emitted spans.
+        environment: Deployment environment label for emitted spans.
+    """
+
+    enabled: bool
+    endpoint: str
+    public_key: str | None
+    secret_key: str | None
+    service_name: str
+    environment: str
+
+
+@dataclass(frozen=True)
 class DemoConfig:  # pylint: disable=too-many-instance-attributes
     """Runtime configuration for loading PDFs into OracleVectorStore.
 
@@ -159,6 +180,7 @@ class DemoConfig:  # pylint: disable=too-many-instance-attributes
         agent_model: Locus model name used by the RAG agent.
         agent_server: AgentServer configuration.
         a2a_server: A2A server configuration.
+        langfuse: Langfuse OpenTelemetry export configuration.
         runtime: Demo runtime behavior configuration.
     """
 
@@ -169,6 +191,7 @@ class DemoConfig:  # pylint: disable=too-many-instance-attributes
     agent_model: str
     agent_server: AgentServerConfig
     a2a_server: A2AServerConfig
+    langfuse: LangfuseConfig
     runtime: RuntimeConfig
 
 
@@ -239,6 +262,20 @@ def load_config() -> DemoConfig:
             port=_int_env("DEMO_RAG_A2A_PORT", 7421),
             url=_env("DEMO_RAG_A2A_URL", "http://127.0.0.1:7421"),
             api_key=_optional_env("DEMO_RAG_A2A_API_KEY"),
+        ),
+        langfuse=LangfuseConfig(
+            enabled=_bool_env("DEMO_RAG_LANGFUSE_ENABLED", False),
+            endpoint=_env(
+                "DEMO_RAG_LANGFUSE_ENDPOINT",
+                "https://cloud.langfuse.com/api/public/otel/v1/traces",
+            ),
+            public_key=_optional_env("DEMO_RAG_LANGFUSE_PUBLIC_KEY"),
+            secret_key=_optional_env("DEMO_RAG_LANGFUSE_SECRET_KEY"),
+            service_name=_env(
+                "DEMO_RAG_LANGFUSE_SERVICE_NAME",
+                "locus-demo-rag-a2a",
+            ),
+            environment=_env("DEMO_RAG_LANGFUSE_ENVIRONMENT", "local"),
         ),
         runtime=RuntimeConfig(
             chunk_size=_int_env("DEMO_RAG_CHUNK_SIZE", 1000),

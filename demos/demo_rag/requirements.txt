@@ -1,2 +1,5 @@
 oracledb
+opentelemetry-api
+opentelemetry-exporter-otlp-proto-http
+opentelemetry-sdk
 pypdf
