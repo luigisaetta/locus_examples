@@ -16,6 +16,7 @@ from locus.models.providers.oci import OCIOpenAIModel, build_oci_openai_base_url
 from locus.rag.embeddings.oci import OCIEmbeddings
 from locus.rag.retriever import _escape_spotlight
 from locus.rag.retriever import RAGRetriever
+from locus.rag.reranker import CohereReranker
 from locus.rag.stores.oracle import OracleVectorStore
 from locus.tools import tool
 
@@ -120,22 +121,64 @@ def build_retriever(config: DemoConfig) -> RAGRetriever:
     """
     embedder = build_embedder(config)
     store = build_store(config, dimension=embedder.config.dimension)
+    reranker = build_reranker(config)
     LOGGER.info(
-        "Creating RAGRetriever chunk_size=%s chunk_overlap=%s",
+        "Creating RAGRetriever chunk_size=%s chunk_overlap=%s reranker=%s",
         config.runtime.chunk_size,
         config.runtime.chunk_overlap,
+        type(reranker).__name__ if reranker is not None else "disabled",
     )
     return RAGRetriever(
         embedder=embedder,
         store=store,
         chunk_size=config.runtime.chunk_size,
         chunk_overlap=config.runtime.chunk_overlap,
+        reranker=reranker,
+        rerank_candidate_pool=config.reranker.top_k,
+    )
+
+
+def build_reranker(config: DemoConfig) -> CohereReranker | None:
+    """Create the optional OCI Cohere reranker for retrieved chunks.
+
+    Args:
+        config: Demo configuration loaded from environment variables.
+
+    Returns:
+        Configured reranker, or None when disabled.
+    """
+    if not config.reranker.enabled:
+        LOGGER.info("Reranker disabled")
+        return None
+
+    service_endpoint = config.embeddings.service_endpoint or _genai_endpoint(
+        config.embeddings.region
+    )
+    LOGGER.info(
+        "Creating CohereReranker with model: %s endpoint: %s top_k: %s top_n: %s",
+        config.reranker.model_id,
+        service_endpoint,
+        config.reranker.top_k,
+        config.reranker.top_n,
+    )
+    return CohereReranker(
+        model=config.reranker.model_id,
+        compartment_id=config.embeddings.compartment_id or None,
+        profile_name=config.embeddings.profile_name,
+        auth_type=config.embeddings.auth_type,
+        config_file=config.embeddings.config_file,
+        service_endpoint=service_endpoint,
+        region=config.embeddings.region,
+        top_n=config.reranker.top_n,
+        max_chunks_per_document=config.reranker.max_chunks_per_document,
+        max_tokens_per_document=config.reranker.max_tokens_per_document,
     )
 
 
 def create_search_tool(
     retriever: RAGRetriever,
     limit: int = 10,
+    max_limit: int = 10,
     threshold: float | None = 0.5,
 ) -> Any:
     """Create a robust RAG search tool for OCI model tool calls.
@@ -143,6 +186,7 @@ def create_search_tool(
     Args:
         retriever: RAG retriever used to search the vector store.
         limit: Default maximum number of results to return.
+        max_limit: Hard cap for model-provided result limits.
         threshold: Default minimum relevance score.
 
     Returns:
@@ -172,7 +216,7 @@ def create_search_tool(
         Returns:
             Search results with content, scores, metadata, and document ids.
         """
-        coerced_limit = _coerce_limit(max_results, default=limit)
+        coerced_limit = _coerce_limit(max_results, default=limit, maximum=max_limit)
         coerced_threshold = _coerce_threshold(min_score, default=threshold)
 
         result = await retriever.retrieve(
@@ -215,7 +259,13 @@ def build_agent(config: DemoConfig) -> Agent:
     LOGGER.info("Creating Agent with model: %s", config.agent_model)
     return Agent(
         model=build_agent_model(config),
-        tools=[create_search_tool(retriever)],
+        tools=[
+            create_search_tool(
+                retriever,
+                limit=config.reranker.top_n,
+                max_limit=config.reranker.top_n,
+            )
+        ],
         system_prompt=RAG_SYSTEM_PROMPT,
     )
 
@@ -257,21 +307,22 @@ def build_agent_model(config: DemoConfig) -> str | Any:
     )
 
 
-def _coerce_limit(value: int | str, default: int) -> int:
+def _coerce_limit(value: int | str, default: int, maximum: int) -> int:
     """Convert a tool-provided result limit to a bounded integer.
 
     Args:
         value: Raw value provided by the model.
         default: Default value used when conversion fails.
+        maximum: Maximum allowed value.
 
     Returns:
-        Integer result limit between 1 and 20.
+        Integer result limit between 1 and maximum.
     """
     try:
         limit = int(value)
     except (TypeError, ValueError):
         limit = default
-    return max(1, min(limit, 20))
+    return max(1, min(limit, maximum))
 
 
 def _coerce_threshold(value: float | str | None, default: float | None) -> float | None:

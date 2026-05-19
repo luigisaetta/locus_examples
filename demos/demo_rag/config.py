@@ -95,6 +95,27 @@ class RuntimeConfig:
 
 
 @dataclass(frozen=True)
+class RerankerConfig:
+    """Reranker configuration.
+
+    Attributes:
+        enabled: Whether to rerank vector search candidates.
+        model_id: OCI Cohere rerank model ID.
+        top_k: Number of vector search candidates to fetch before reranking.
+        top_n: Number of reranked results to keep.
+        max_chunks_per_document: Optional OCI rerank chunk limit per document.
+        max_tokens_per_document: Optional OCI rerank token limit per document.
+    """
+
+    enabled: bool
+    model_id: str
+    top_k: int
+    top_n: int
+    max_chunks_per_document: int | None
+    max_tokens_per_document: int | None
+
+
+@dataclass(frozen=True)
 class AgentServerConfig:
     """AgentServer configuration.
 
@@ -127,13 +148,14 @@ class A2AServerConfig:
 
 
 @dataclass(frozen=True)
-class DemoConfig:
+class DemoConfig:  # pylint: disable=too-many-instance-attributes
     """Runtime configuration for loading PDFs into OracleVectorStore.
 
     Attributes:
         pdf_dir: Folder containing PDF files to load.
         oracle: Oracle vector store configuration.
         embeddings: OCI embedding provider configuration.
+        reranker: Reranker configuration.
         agent_model: Locus model name used by the RAG agent.
         agent_server: AgentServer configuration.
         a2a_server: A2A server configuration.
@@ -143,6 +165,7 @@ class DemoConfig:
     pdf_dir: Path
     oracle: OracleStoreConfig
     embeddings: OCIEmbeddingDemoConfig
+    reranker: RerankerConfig
     agent_model: str
     agent_server: AgentServerConfig
     a2a_server: A2AServerConfig
@@ -189,6 +212,21 @@ def load_config() -> DemoConfig:
             ),
             service_endpoint=_optional_env("DEMO_RAG_OCI_SERVICE_ENDPOINT"),
             config_file=_env("DEMO_RAG_OCI_CONFIG_FILE", "~/.oci/config"),
+        ),
+        reranker=RerankerConfig(
+            enabled=_bool_env("DEMO_RAG_RERANKER_ENABLED", True),
+            model_id=_env("DEMO_RAG_RERANKER_MODEL_ID", "cohere.rerank-v4.0-fast"),
+            top_k=_int_env(
+                "DEMO_RAG_RETRIEVAL_TOP_K",
+                _int_env("DEMO_RAG_RERANKER_CANDIDATE_POOL", 50),
+            ),
+            top_n=_int_env("DEMO_RAG_RERANKER_TOP_N", 10),
+            max_chunks_per_document=_optional_int_env(
+                "DEMO_RAG_RERANKER_MAX_CHUNKS_PER_DOCUMENT"
+            ),
+            max_tokens_per_document=_optional_int_env(
+                "DEMO_RAG_RERANKER_MAX_TOKENS_PER_DOCUMENT"
+            ),
         ),
         agent_model=_env("DEMO_RAG_AGENT_MODEL", "oci:openai.gpt-5.5"),
         agent_server=AgentServerConfig(
@@ -250,6 +288,19 @@ def _int_env(name: str, default: int) -> int:
     """
     value = os.environ.get(name, "").strip()
     return int(value) if value else default
+
+
+def _optional_int_env(name: str) -> int | None:
+    """Return an optional integer environment variable value.
+
+    Args:
+        name: Environment variable name.
+
+    Returns:
+        The parsed integer value or None when the variable is missing.
+    """
+    value = os.environ.get(name, "").strip()
+    return int(value) if value else None
 
 
 def _bool_env(name: str, default: bool) -> bool:

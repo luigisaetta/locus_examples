@@ -1,7 +1,26 @@
 # RAG Demo with Locus and OracleVectorStore
 
 This demo loads PDF files from the repository root `pdf` folder into an Oracle
-vector store managed by `locus.rag.OracleVectorStore`.
+vector store managed by `locus.rag.OracleVectorStore`. Retrieval uses a
+retrieve-then-rerank flow: semantic vector search first fetches a wider
+candidate set, then an OCI Cohere reranker reorders those chunks before the
+agent sees them.
+
+## Reranking
+
+The reranker is enabled by default and uses `cohere.rerank-v4.0-fast`.
+
+```bash
+DEMO_RAG_RERANKER_ENABLED=true
+DEMO_RAG_RERANKER_MODEL_ID=cohere.rerank-v4.0-fast
+DEMO_RAG_RETRIEVAL_TOP_K=50
+DEMO_RAG_RERANKER_TOP_N=10
+```
+
+`DEMO_RAG_RETRIEVAL_TOP_K` controls how many candidates are fetched from
+OracleVectorStore before reranking. `DEMO_RAG_RERANKER_TOP_N` controls how many
+reranked chunks are returned to the agent. Set
+`DEMO_RAG_RERANKER_ENABLED=false` to keep the original semantic-only ordering.
 
 ## Run
 
