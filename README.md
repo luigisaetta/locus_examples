@@ -33,4 +33,15 @@ Use the `locus_examples` conda environment for local commands.
 
 - Keep documentation and README files in English.
 - Keep changes atomic and simple.
-- Run Black and Pylint before considering Python changes complete.
+- Run Black, Pylint, and pytest before considering Python changes complete.
+- Add or update pytest tests whenever introducing new behavior.
+
+## Tests
+
+Install pytest in the `locus_examples` conda environment, then run the suite
+from the repository root:
+
+```bash
+conda activate locus_examples
+python -m pytest
+```

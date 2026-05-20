@@ -1,6 +1,6 @@
 """
 Author: L. Saetta
-Last update: 2026-05-19
+Last update: 2026-05-20
 License: MIT
 Description: Shared model configuration utilities for Locus tutorials.
 
@@ -29,7 +29,7 @@ Environment Variables:
                               By default the transport is picked
                               automatically from LOCUS_MODEL_ID:
                               cohere.command-r-* → "sdk" (OCIModel),
-                              everything else → "v1" (OCIOpenAIModel).
+                              everything else → "v1" (OCIChatCompletionsModel).
 
     # OpenAI
     OPENAI_API_KEY         - OpenAI API key
@@ -248,7 +248,7 @@ def _pick_oci_transport(model_id: str) -> str:
     Cohere R-series models need the OCI SDK's proprietary chat shape and
     are routed through ``OCIModel``. Everything else (OpenAI / Meta / xAI
     / Mistral / Gemini, and non-R Cohere) goes through
-    ``OCIOpenAIModel`` against ``/openai/v1/chat/completions``.
+    ``OCIChatCompletionsModel`` against ``/openai/v1/chat/completions``.
 
     ``LOCUS_OCI_TRANSPORT=v1|sdk`` overrides the automatic choice.
     """
@@ -276,8 +276,8 @@ def _get_oci_model(**kwargs: Any) -> Any:
 
 
 def _get_oci_v1_model(model_id: str, **kwargs: Any) -> Any:
-    """Build an OCIOpenAIModel against /openai/v1/chat/completions."""
-    from locus.models.providers.oci import OCIOpenAIModel
+    """Build an OCIChatCompletionsModel against /openai/v1/chat/completions."""
+    from locus.models.providers.oci import OCIChatCompletionsModel
 
     region = os.environ.get("LOCUS_OCI_REGION", "us-chicago-1")
     compartment = os.environ.get("LOCUS_OCI_COMPARTMENT")
@@ -287,7 +287,7 @@ def _get_oci_v1_model(model_id: str, **kwargs: Any) -> Any:
         if not compartment:
             msg = f"LOCUS_OCI_COMPARTMENT is required when LOCUS_OCI_AUTH_TYPE={auth_type}"
             raise ValueError(msg)
-        return OCIOpenAIModel(
+        return OCIChatCompletionsModel(
             model=model_id,
             auth_type=auth_type,
             compartment_id=compartment,
@@ -298,7 +298,7 @@ def _get_oci_v1_model(model_id: str, **kwargs: Any) -> Any:
     # Default: profile-based auth. compartment auto-derived from the
     # profile's tenancy unless overridden.
     profile = os.environ.get("LOCUS_OCI_PROFILE", "DEFAULT")
-    return OCIOpenAIModel(
+    return OCIChatCompletionsModel(
         model=model_id,
         profile=profile,
         compartment_id=compartment,

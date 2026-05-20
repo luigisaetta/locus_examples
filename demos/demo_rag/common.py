@@ -1,6 +1,6 @@
 """
 Author: L. Saetta
-Last update: 2026-05-19
+Last update: 2026-05-20
 License: MIT
 Description: Shared builders and utilities for the RAG demo components.
 """
@@ -12,7 +12,10 @@ import warnings
 from typing import Any
 
 from locus.agent import Agent
-from locus.models.providers.oci import OCIOpenAIModel, build_oci_openai_base_url
+from locus.models.providers.oci import (
+    OCIChatCompletionsModel,
+    build_oci_openai_base_url,
+)
 from locus.rag.embeddings.oci import OCIEmbeddings
 from locus.rag.retriever import _escape_spotlight
 from locus.rag.retriever import RAGRetriever
@@ -268,6 +271,9 @@ def build_agent(config: DemoConfig) -> Agent:
             )
         ],
         system_prompt=RAG_SYSTEM_PROMPT,
+        # this one plug the telemetry hooks
+        # into the agent execution, so we can
+        # get traces and metrics in Langfuse
         hooks=build_hooks(config),
     )
 
@@ -290,7 +296,7 @@ def build_agent_model(config: DemoConfig) -> str | Any:
     base_url = build_oci_openai_base_url(region)
     LOGGER.info("Creating OCI LLM model with region: %s base_url: %s", region, base_url)
     if config.embeddings.auth_type == "api_key":
-        return OCIOpenAIModel(
+        return OCIChatCompletionsModel(
             model=model_id,
             profile=config.embeddings.profile_name,
             compartment_id=config.embeddings.compartment_id or None,
@@ -299,7 +305,7 @@ def build_agent_model(config: DemoConfig) -> str | Any:
             config_file=config.embeddings.config_file,
         )
 
-    return OCIOpenAIModel(
+    return OCIChatCompletionsModel(
         model=model_id,
         auth_type=config.embeddings.auth_type,
         compartment_id=config.embeddings.compartment_id or None,

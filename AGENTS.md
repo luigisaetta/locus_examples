@@ -11,6 +11,9 @@ vector stores.
 - Always use the `locus_examples` conda environment for local commands.
 - Before considering a code change complete, run Black and Pylint on the touched
   Python code and fix all reported issues.
+- When introducing new features, add or update pytest tests for the new behavior.
+- Configure tests so they can be run from the repository root with
+  `python -m pytest`.
 - Keep documentation and README files in English.
 - Keep changes atomic, scoped, and as simple as possible. Do not over-engineer.
 - Prefer demos that can be run from the repository root with `python -m ...`.
