@@ -271,9 +271,8 @@ def build_agent(config: DemoConfig) -> Agent:
             )
         ],
         system_prompt=RAG_SYSTEM_PROMPT,
-        # this one plug the telemetry hooks
-        # into the agent execution, so we can
-        # get traces and metrics in Langfuse
+        # Plug the official Locus telemetry hook into the agent execution,
+        # with Langfuse configured as the OpenTelemetry trace exporter.
         hooks=build_hooks(config),
     )
 

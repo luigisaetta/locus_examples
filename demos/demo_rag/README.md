@@ -36,8 +36,8 @@ pip install -r demos/demo_rag/requirements.txt
 ## Langfuse tracing
 
 The A2A and HTTP agents can export Locus invocation, iteration, and tool-call
-spans to Langfuse through OpenTelemetry. The demo uses a custom hook so
-`tool.search_knowledge` spans are children of the same `agent.invocation` trace.
+spans to Langfuse through OpenTelemetry. The demo configures Langfuse as the
+OpenTelemetry trace exporter and uses Locus `TelemetryHook` to create the spans.
 
 Enable tracing in `demos/demo_rag/.env`:
 
@@ -50,8 +50,9 @@ export DEMO_RAG_LANGFUSE_SERVICE_NAME=locus-demo-rag-a2a
 export DEMO_RAG_LANGFUSE_ENVIRONMENT=local
 ```
 
-The hook records operational metadata only. Tool arguments, retrieved chunks,
-and final results are not exported as span attributes.
+`TelemetryHook` is configured to record operational metadata only. Tool
+arguments, retrieved chunks, and final results are not exported as span
+attributes.
 
 Load PDF files from the root `pdf` folder into OracleVectorStore:
 
