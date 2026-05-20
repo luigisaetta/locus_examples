@@ -1,6 +1,6 @@
 """
 Author: L. Saetta
-Last update: 2026-05-19
+Last update: 2026-05-20
 License: MIT
 Description: Example showing how to expose a StateGraph through AgentServer.
 
@@ -15,7 +15,7 @@ server, without changing the graph itself.
 
 Run:
 
-    python examples/example05.py
+    python -m examples.example05
 
 Then invoke:
 
@@ -31,12 +31,13 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from typing import Any
 
-from config import get_model
 from locus.agent import Agent
 from locus.core.events import LocusEvent, TerminateEvent, ThinkEvent
 from locus.multiagent import END, START, StateGraph
 from locus.multiagent.graph import StreamMode
 from locus.server import AgentServer
+
+from examples.config import get_model
 
 
 def _llm_call(prompt: str) -> str:

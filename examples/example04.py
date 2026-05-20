@@ -1,6 +1,6 @@
 """
 Author: L. Saetta
-Last update: 2026-05-19
+Last update: 2026-05-20
 License: MIT
 Description: Class-based StateGraph example using callable step objects.
 
@@ -23,9 +23,10 @@ import asyncio
 import time
 from typing import Any
 
-from config import get_model
 from locus.agent import Agent
 from locus.multiagent import END, START, StateGraph
+
+from examples.config import get_model
 
 
 def _llm_call(

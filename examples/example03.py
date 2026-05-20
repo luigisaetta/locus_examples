@@ -1,6 +1,6 @@
 """
 Author: L. Saetta
-Last update: 2026-05-19
+Last update: 2026-05-20
 License: MIT
 Description: Function-based StateGraph example with async graph nodes.
 """
@@ -8,9 +8,10 @@ Description: Function-based StateGraph example with async graph nodes.
 import time
 import asyncio
 
-from config import get_model
 from locus.agent import Agent
 from locus.multiagent import END, START, StateGraph
+
+from examples.config import get_model
 
 
 def _llm_call(
